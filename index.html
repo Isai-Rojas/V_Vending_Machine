@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -18,64 +19,160 @@
     }
 
 
-    /* Flash color */
     .clicked {
       background-color: lightgreen;
+    }
+
+
+    #balanceBox {
+      margin: 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+
+    #output {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
 
 
-<h1>Click the vending machine screen</h1>
-<img id="machine" src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png" style="width: 100%" alt="vending machine" border="0">
+<h1>Virtual Vending Machine</h1>
+
+
+<img id="machine" src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png"  alt="vending machine" border="0">
+
+
 
 
 <div id="menu">
-  <h2>Select Items</h2>
-  <div class="item" onclick="addItem(this, 'Chips', 1.50)">Chips - $1.50</div>
-  <div class="item" onclick="addItem(this, 'Soda', 2.00)">Soda - $2.00</div>
-  <div class="item" onclick="addItem(this, 'Candy', 1.25)">Candy - $1.25</div>
+
+
+  <div id="balanceBox">Balance: $0.00</div>
+
+
+  <button onclick="addMoney(5)">Insert $5</button>
+
+
+  <h2>Select Item</h2>
+  <div class="item" onclick="buyItem(this, 'Chips')">Chips - $1.50</div>
+  <div class="item" onclick="buyItem(this, 'Soda')">Soda - $2.00</div>
+  <div class="item" onclick="buyItem(this, 'Candy')">Candy - $1.25</div>
+
+
   <button onclick="finish()">Done</button>
+
+
+  <div id="output"></div>
 </div>
 
 
 <script>
-let cart = {};
+class VendingMachine {
+  constructor() {
+    this.prices = { Chips: 1.50, Soda: 2.00, Candy: 1.25 };
 
 
-// Open menu
+    this.balance = 0;
+    this.spent = 0.0;
+    this.purchases = [];
+  }
+
+
+  addMoney(amount) {
+    this.balance += amount;
+    return this.balance;
+  }
+
+
+  buy(item) {
+    const price = this.prices[item];
+
+
+    if (this.balance < price) {
+      return `⚠️ Not enough balance for ${item}`;
+    }
+   
+    this.spent += price;
+    this.balance -= price;
+    this.purchases.push(item);
+
+
+    return `✅ Bought ${item}`;
+  }
+}
+
+
+const vm = new VendingMachine();
+
+
+function updateBalance() {
+  document.getElementById("balanceBox").innerText =
+    `Balance: $${vm.balance.toFixed(2)}`;
+}
+
+
+// Open machine
 document.getElementById('machine').onclick = () => {
   document.getElementById('menu').style.display = 'block';
+  updateBalance();
 };
 
 
-function addItem(element, name, price) {
-  // Add to cart
-  if (!cart[name]) {
-    cart[name] = { count: 0, price: price };
-  }
-  cart[name].count++;
+function addMoney(amount) {
+  vm.addMoney(amount);
+  updateBalance();
+}
 
 
-  // Add visual feedback
+function buyItem(element, item) {
+  let result = vm.buy(item);
+  if (result.startsWith("⚠️")) {
+    element.style.backgroundColor = "red";
+
+
+    setTimeout(() => {
+    element.style.backgroundColor = "";
+  }, 300);
+}
   element.classList.add("clicked");
+  setTimeout(() => element.classList.remove("clicked"), 200);
 
 
-  // Remove after short delay
-  setTimeout(() => {
-    element.classList.remove("clicked");
-  }, 200);
+  document.getElementById("output").innerText = result;
+  updateBalance();
 }
 
 
 function finish() {
-  localStorage.setItem('transaction', JSON.stringify(cart));
-  window.location.href = 'receipt.html';
+  const receipt = {
+    items: vm.purchases,
+    balance: vm.balance.toFixed(2),
+    totalItems: vm.purchases.length,
+    spent: vm.spent.toFixed(2)
+  };
+
+
+  localStorage.setItem("receipt", JSON.stringify(receipt));
+
+
+  window.location.href = "receipt.html";
 }
 </script>
 
 
 </body>
 </html>
+
+
 
