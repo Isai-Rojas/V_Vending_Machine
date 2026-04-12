@@ -1,41 +1,50 @@
 
-<!-- RECEIPT PAGE -->
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Receipt</title>
 </head>
 <body>
 
-<h1>Our Vending Machine</h1>
-<p id="date"></p>
 
-<ul id="items"></ul>
+<h1>🧾 Receipt</h1>
 
-<p id="totalItems"></p>
-<p id="totalCost"></p>
+
+<div id="receipt"></div>
+
 
 <script>
-const data = JSON.parse(localStorage.getItem('transaction'));
-const list = document.getElementById('items');
-let totalItems = 0;
-let totalCost = 0;
+const data = JSON.parse(localStorage.getItem("receipt"));
 
-for (let item in data) {
-  const li = document.createElement('li');
-  const cost = data[item].count * data[item].price;
-  li.textContent = `${item} x${data[item].count} - $${cost.toFixed(2)}`;
-  list.appendChild(li);
 
-  totalItems += data[item].count;
-  totalCost += cost;
+let output = "";
+
+
+if (data) {
+  output += `<strong>Items Purchased:</strong><br>`;
+
+
+  if (data.items.length === 0) {
+    output += "No items purchased<br>";
+  } else {
+    data.items.forEach(item => {
+      output += "- " + item + "<br>";
+    });
+  }
+
+
+  output += `<br><strong>Total Items:</strong> ${data.totalItems}<br>`;
+  output += `<strong>Remaining Balance (Change):</strong> $${data.balance}<br>`;
+  output += `<strong>Total Amount Spent: </strong> $${data.spent}<br>`;
 }
 
-document.getElementById('totalItems').textContent = 'Total Items: ' + totalItems;
-document.getElementById('totalCost').textContent = 'Total Cost: $' + totalCost.toFixed(2);
-document.getElementById('date').textContent = new Date().toLocaleString();
+
+document.getElementById("receipt").innerHTML = output;
 </script>
+
 
 </body>
 </html>
+
+
+
