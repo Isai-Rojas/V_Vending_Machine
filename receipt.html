@@ -1,0 +1,41 @@
+
+<!-- RECEIPT PAGE -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Receipt</title>
+</head>
+<body>
+
+<h1>Our Vending Machine</h1>
+<p id="date"></p>
+
+<ul id="items"></ul>
+
+<p id="totalItems"></p>
+<p id="totalCost"></p>
+
+<script>
+const data = JSON.parse(localStorage.getItem('transaction'));
+const list = document.getElementById('items');
+let totalItems = 0;
+let totalCost = 0;
+
+for (let item in data) {
+  const li = document.createElement('li');
+  const cost = data[item].count * data[item].price;
+  li.textContent = `${item} x${data[item].count} - $${cost.toFixed(2)}`;
+  list.appendChild(li);
+
+  totalItems += data[item].count;
+  totalCost += cost;
+}
+
+document.getElementById('totalItems').textContent = 'Total Items: ' + totalItems;
+document.getElementById('totalCost').textContent = 'Total Cost: $' + totalCost.toFixed(2);
+document.getElementById('date').textContent = new Date().toLocaleString();
+</script>
+
+</body>
+</html>

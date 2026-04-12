@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Virtual Vending Machine</title>
+  <style>
+    body { font-family: Arial; text-align: center; }
+    #machine { width: 300px; cursor: pointer; }
+    #menu { display: none; }
+
+
+    .item {
+      cursor: pointer;
+      margin: 10px;
+      padding: 10px;
+      border: 1px solid black;
+      transition: background-color 0.3s;
+    }
+
+
+    /* Flash color */
+    .clicked {
+      background-color: lightgreen;
+    }
+  </style>
+</head>
+<body>
+
+
+<h1>Click the vending machine screen</h1>
+<img id="machine" src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png" style="width: 100%" alt="vending machine" border="0">
+
+
+<div id="menu">
+  <h2>Select Items</h2>
+  <div class="item" onclick="addItem(this, 'Chips', 1.50)">Chips - $1.50</div>
+  <div class="item" onclick="addItem(this, 'Soda', 2.00)">Soda - $2.00</div>
+  <div class="item" onclick="addItem(this, 'Candy', 1.25)">Candy - $1.25</div>
+  <button onclick="finish()">Done</button>
+</div>
+
+
+<script>
+let cart = {};
+
+
+// Open menu
+document.getElementById('machine').onclick = () => {
+  document.getElementById('menu').style.display = 'block';
+};
+
+
+function addItem(element, name, price) {
+  // Add to cart
+  if (!cart[name]) {
+    cart[name] = { count: 0, price: price };
+  }
+  cart[name].count++;
+
+
+  // Add visual feedback
+  element.classList.add("clicked");
+
+
+  // Remove after short delay
+  setTimeout(() => {
+    element.classList.remove("clicked");
+  }, 200);
+}
+
+
+function finish() {
+  localStorage.setItem('transaction', JSON.stringify(cart));
+  window.location.href = 'receipt.html';
+}
+</script>
+
+
+</body>
+</html>
+
