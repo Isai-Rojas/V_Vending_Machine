@@ -3,12 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Virtual Vending Machine</title>
-
-
-  <!-- QR Code Library -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-
   <style>
     body { font-family: Arial; text-align: center; }
     #machine { width: 300px; cursor: pointer; }
@@ -47,11 +41,6 @@
       padding: 8px 12px;
       cursor: pointer;
     }
-
-
-    #qrContainer {
-      margin-top: 20px;
-    }
   </style>
 </head>
 <body>
@@ -60,7 +49,9 @@
 <h1>Virtual Vending Machine</h1>
 
 
-<img id="machine" src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png">
+<img id="machine" src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png"  alt="vending machine" border="0">
+
+
 
 
 <div id="menu">
@@ -82,9 +73,6 @@
 
 
   <div id="output"></div>
-  <div id="qrContainer"></div>
-
-
 </div>
 
 
@@ -92,6 +80,8 @@
 class VendingMachine {
   constructor() {
     this.prices = { Chips: 1.50, Soda: 2.00, Candy: 1.25 };
+
+
     this.balance = 0;
     this.spent = 0.0;
     this.purchases = [];
@@ -100,6 +90,7 @@ class VendingMachine {
 
   addMoney(amount) {
     this.balance += amount;
+    return this.balance;
   }
 
 
@@ -110,8 +101,7 @@ class VendingMachine {
     if (this.balance < price) {
       return `⚠️ Not enough balance for ${item}`;
     }
-
-
+   
     this.spent += price;
     this.balance -= price;
     this.purchases.push(item);
@@ -131,6 +121,7 @@ function updateBalance() {
 }
 
 
+// Open machine
 document.getElementById('machine').onclick = () => {
   document.getElementById('menu').style.display = 'block';
   updateBalance();
@@ -145,14 +136,14 @@ function addMoney(amount) {
 
 function buyItem(element, item) {
   let result = vm.buy(item);
-
-
   if (result.startsWith("⚠️")) {
     element.style.backgroundColor = "red";
-    setTimeout(() => element.style.backgroundColor = "", 300);
-  }
 
 
+    setTimeout(() => {
+    element.style.backgroundColor = "";
+  }, 300);
+}
   element.classList.add("clicked");
   setTimeout(() => element.classList.remove("clicked"), 200);
 
@@ -171,36 +162,16 @@ function finish() {
   };
 
 
-  // Save locally (fallback)
   localStorage.setItem("receipt", JSON.stringify(receipt));
 
 
-  // Create URL with embedded data
-  const receiptURL =
-    window.location.origin +
-    "/receiptQR.html?data=" +
-    encodeURIComponent(JSON.stringify(receipt));
-
-
-  // Clear old QR
-  const qrContainer = document.getElementById("qrContainer");
-  qrContainer.innerHTML = "";
-
-
-  // Generate QR
-  new QRCode(qrContainer, {
-    text: receiptURL,
-    width: 200,
-    height: 200
-  });
-
-
-  document.getElementById("output").innerText =
-    "📱 Scan the QR code to view your receipt!";
+  window.location.href = "receipt.html";
 }
 </script>
 
 
 </body>
 </html>
+
+
 
