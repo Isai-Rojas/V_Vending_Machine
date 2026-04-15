@@ -1,20 +1,44 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <title>Receipt</title>
+  <style>
+    body {
+      font-family: Arial;
+      text-align: center;
+    }
+
+
+    #receipt {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
 
 
 <h1>🧾 Receipt</h1>
+<p>Scan result loaded successfully ✅</p>
 
 
 <div id="receipt"></div>
 
 
 <script>
-const data = JSON.parse(localStorage.getItem("receipt"));
+// Get data from URL
+const params = new URLSearchParams(window.location.search);
+const qrData = params.get("data");
+
+
+let data = null;
+
+
+if (qrData) {
+  data = JSON.parse(decodeURIComponent(qrData));
+} else {
+  data = JSON.parse(localStorage.getItem("receipt"));
+}
 
 
 let output = "";
@@ -35,7 +59,9 @@ if (data) {
 
   output += `<br><strong>Total Items:</strong> ${data.totalItems}<br>`;
   output += `<strong>Remaining Balance (Change):</strong> $${data.balance}<br>`;
-  output += `<strong>Total Amount Spent: </strong> $${data.spent}<br>`;
+  output += `<strong>Total Amount Spent:</strong> $${data.spent}<br>`;
+} else {
+  output = "⚠️ No receipt data found.";
 }
 
 
@@ -45,6 +71,4 @@ document.getElementById("receipt").innerHTML = output;
 
 </body>
 </html>
-
-
 
