@@ -1,177 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Virtual Vending Machine</title>
-  <style>
-    body { font-family: Arial; text-align: center; }
-    #machine { width: 300px; cursor: pointer; }
-    #menu { display: none; }
+<meta charset="UTF-8">
+<title>QR Vending Machine</title>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
-    .item {
-      cursor: pointer;
-      margin: 10px;
-      padding: 10px;
-      border: 1px solid black;
-      transition: background-color 0.3s;
-    }
+<style>
+body { font-family: Arial; text-align: center; }
 
+#machine { width: 300px; cursor: pointer; }
 
-    .clicked {
-      background-color: lightgreen;
-    }
+#menu { display: none; }
 
+.item {
+  cursor: pointer;
+  margin: 10px;
+  padding: 10px;
+  border: 1px solid black;
+  transition: background-color 0.3s;
+}
 
-    #balanceBox {
-      margin: 10px;
-      font-size: 18px;
-      font-weight: bold;
-    }
+.clicked { background-color: lightgreen; }
 
+#balanceBox { margin: 10px; font-size: 18px; font-weight: bold; }
 
-    #output {
-      margin-top: 10px;
-      font-weight: bold;
-    }
+#output { margin-top: 10px; font-weight: bold; }
 
+button { margin: 5px; padding: 8px 12px; cursor: pointer; }
 
-    button {
-      margin: 5px;
-      padding: 8px 12px;
-      cursor: pointer;
-    }
-  </style>
+#qrcode { margin-top: 20px; }
+
+</style>
+
 </head>
+
+
+
 <body>
 
+<h1>QR Vending Machine</h1>
 
-<h1>Virtual Vending Machine</h1>
-
-
-<img id="machine" src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png"  alt="vending machine" border="0">
-
-
-
+<img id="machine"
+src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png">
 
 <div id="menu">
 
+<div id="balanceBox">Balance: $0.00</div>
 
-  <div id="balanceBox">Balance: $0.00</div>
+<button onclick="addMoney(5)">Insert $5</button>
 
+<h2>Select Item</h2>
 
-  <button onclick="addMoney(5)">Insert $5</button>
+<div class="item" onclick="buyItem(this, 'chips')">Chips - $1.50</div>
+<div class="item" onclick="buyItem(this, 'soda')">Soda - $2.00</div>
+<div class="item" onclick="buyItem(this, 'candy')">Candy - $1.25</div>
 
+<button onclick="finish()">Done</button>
 
-  <h2>Select Item</h2>
-  <div class="item" onclick="buyItem(this, 'Chips')">Chips - $1.50</div>
-  <div class="item" onclick="buyItem(this, 'Soda')">Soda - $2.00</div>
-  <div class="item" onclick="buyItem(this, 'Candy')">Candy - $1.25</div>
+<div id="output"></div>
+<div id="qrcode"></div>
 
-
-  <button onclick="finish()">Done</button>
-
-
-  <div id="output"></div>
 </div>
-
-
 <script>
 class VendingMachine {
   constructor() {
-    this.prices = { Chips: 1.50, Soda: 2.00, Candy: 1.25 };
-
-
+    this.prices = { chips: 1.50, soda: 2.00, candy: 1.25 };
     this.balance = 0;
-    this.spent = 0.0;
+    this.spent = 0;
     this.purchases = [];
   }
 
-
   addMoney(amount) {
     this.balance += amount;
-    return this.balance;
   }
-
 
   buy(item) {
     const price = this.prices[item];
 
-
     if (this.balance < price) {
-      return `⚠️ Not enough balance for ${item}`;
+      return false;
     }
-   
-    this.spent += price;
+
     this.balance -= price;
+    this.spent += price;
     this.purchases.push(item);
-
-
-    return `✅ Bought ${item}`;
+    return true;
   }
 }
 
-
 const vm = new VendingMachine();
-
 
 function updateBalance() {
   document.getElementById("balanceBox").innerText =
     `Balance: $${vm.balance.toFixed(2)}`;
 }
 
-
-// Open machine
-document.getElementById('machine').onclick = () => {
-  document.getElementById('menu').style.display = 'block';
+document.getElementById("machine").onclick = () => {
+  document.getElementById("menu").style.display = "block";
   updateBalance();
 };
-
 
 function addMoney(amount) {
   vm.addMoney(amount);
   updateBalance();
 }
 
+function buyItem(el, item) {
+  let success = vm.buy(item);
 
-function buyItem(element, item) {
-  let result = vm.buy(item);
-  if (result.startsWith("⚠️")) {
-    element.style.backgroundColor = "red";
+  if (!success) {
+    el.style.backgroundColor = "red";
+    setTimeout(() => el.style.backgroundColor = "", 300);
+    return;
+  }
 
+  el.classList.add("clicked");
+  setTimeout(() => el.classList.remove("clicked"), 200);
 
-    setTimeout(() => {
-    element.style.backgroundColor = "";
-  }, 300);
-}
-  element.classList.add("clicked");
-  setTimeout(() => element.classList.remove("clicked"), 200);
-
-
-  document.getElementById("output").innerText = result;
   updateBalance();
 }
 
-
 function finish() {
+  if (vm.purchases.length === 0) return;
+
+  // Count items
+  let counts = {};
+  vm.purchases.forEach(item => {
+    counts[item] = (counts[item] || 0) + 1;
+  });
+
+  // Build receipt object
   const receipt = {
-    items: vm.purchases,
-    balance: vm.balance.toFixed(2),
+    counts: counts,
     totalItems: vm.purchases.length,
+    balance: vm.balance.toFixed(2),
     spent: vm.spent.toFixed(2)
   };
 
+  // Encode receipt
+  let encoded = btoa(JSON.stringify(receipt));
 
-  localStorage.setItem("receipt", JSON.stringify(receipt));
+  // Build dynamic URL
+  let base = window.location.origin +
+    window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1);
 
+  let finalURL = base + "receipt.html?data=" + encoded;
 
-  window.location.href = "receipt.html";
+  // Generate QR
+  document.getElementById("qrcode").innerHTML = "";
+  new QRCode(document.getElementById("qrcode"), {
+    text: finalURL,
+    width: 200,
+    height: 200
+  });
 }
 </script>
 
-
 </body>
 </html>
-
-
-
