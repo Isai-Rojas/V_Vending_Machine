@@ -3,45 +3,46 @@
 <head>
   <title>Receipt</title>
 </head>
-<body>
-
+<body style="font-family: Arial; text-align: center;">
 
 <h1>🧾 Receipt</h1>
-
 
 <div id="receipt"></div>
 
 
-<script>
-const data = JSON.parse(localStorage.getItem("receipt"));
 
+
+<script>
+const params = new URLSearchParams(window.location.search);
+let encoded = params.get("data");
 
 let output = "";
 
+if (encoded) {
+  try {
+    const data = JSON.parse(atob(encoded));
 
-if (data) {
-  output += `<strong>Items Purchased:</strong><br>`;
+    output += `<strong>Items Purchased:</strong><br><br>`;
 
+    if (!data.counts || Object.keys(data.counts).length === 0) {
+      output += "No items purchased<br>";
+    } else {
+      for (let item in data.counts) {
+        output += `${item}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;x${data.counts[item]}<br>`;
+      }
+    }
 
-  if (data.items.length === 0) {
-    output += "No items purchased<br>";
-  } else {
-    data.items.forEach(item => {
-      output += "- " + item + "<br>";
-    });
+    output += `<br><strong>Total Items:</strong> ${data.totalItems}<br>`;
+    output += `<strong>Remaining Balance (Change):</strong> $${data.balance}<br>`;
+    output += `<strong>Total Amount Spent:</strong> $${data.spent}<br>`;
+
+  } catch {
+    output = "Invalid QR Code";
   }
-
-
-  output += `<br><strong>Total Items:</strong> ${data.totalItems}<br>`;
-  output += `<strong>Remaining Balance (Change):</strong> $${data.balance}<br>`;
-  output += `<strong>Total Amount Spent: </strong> $${data.spent}<br>`;
 }
-
 
 document.getElementById("receipt").innerHTML = output;
 </script>
 
-
 </body>
 </html>
-
