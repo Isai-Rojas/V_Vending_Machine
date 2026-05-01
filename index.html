@@ -2,47 +2,81 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>QR Vending Machine</title>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
-body { font-family: Arial; text-align: center; }
+html, body {
+  height: 100%;
+  margin: 0;
+}
 
-#machine { width: 300px; cursor: pointer; }
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial;
+  text-align: center;
+}
 
-#menu { display: none; }
-
-.item {
+/* Responsive image */
+#machine {
+  width: 80vw;
+  max-width: 400px;
   cursor: pointer;
-  margin: 10px;
-  padding: 10px;
+}
+
+#menu {
+  display: none;
+  width: 100%;
+}
+
+/* Items */
+.item {
+  width: 80%;
+  max-width: 400px;
+  margin: 10px auto;
+  padding: 15px;
   border: 1px solid black;
+  cursor: pointer;
+  font-size: clamp(16px, 3vw, 28px);
   transition: background-color 0.3s;
 }
 
-.clicked { background-color: lightgreen; }
+.clicked {
+  background-color: lightgreen;
+}
 
-#balanceBox { margin: 10px; font-size: 18px; font-weight: bold; }
+/* Text */
+#balanceBox, #output {
+  font-size: clamp(18px, 3vw, 28px);
+  margin: 10px;
+  font-weight: bold;
+}
 
-#output { margin-top: 10px; font-weight: bold; }
+/* Buttons */
+button {
+  font-size: clamp(16px, 3vw, 26px);
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+}
 
-button { margin: 5px; padding: 8px 12px; cursor: pointer; }
-
-#qrcode { margin-top: 20px; }
-
+/* QR */
+#qrcode {
+  margin-top: 20px;
+}
 </style>
-
 </head>
-
-
 
 <body>
 
 <h1>QR Vending Machine</h1>
 
-<img id="machine"
-src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png">
+<img id="machine" src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png">
 
 <div id="menu">
 
@@ -62,6 +96,7 @@ src="https://i.ibb.co/JRm3wK06/Vending-Machine-Image.png">
 <div id="qrcode"></div>
 
 </div>
+
 <script>
 class VendingMachine {
   constructor() {
@@ -112,12 +147,14 @@ function buyItem(el, item) {
   if (!success) {
     el.style.backgroundColor = "red";
     setTimeout(() => el.style.backgroundColor = "", 300);
+    document.getElementById("output").innerText = "Not enough money";
     return;
   }
 
   el.classList.add("clicked");
   setTimeout(() => el.classList.remove("clicked"), 200);
 
+  document.getElementById("output").innerText = "Added: " + item;
   updateBalance();
 }
 
@@ -130,7 +167,6 @@ function finish() {
     counts[item] = (counts[item] || 0) + 1;
   });
 
-  // Build receipt object
   const receipt = {
     counts: counts,
     totalItems: vm.purchases.length,
@@ -138,22 +174,22 @@ function finish() {
     spent: vm.spent.toFixed(2)
   };
 
-  // Encode receipt
   let encoded = btoa(JSON.stringify(receipt));
 
-  // Build dynamic URL
   let base = window.location.origin +
     window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/") + 1);
 
   let finalURL = base + "receipt.html?data=" + encoded;
 
-  // Generate QR
   document.getElementById("qrcode").innerHTML = "";
+
   new QRCode(document.getElementById("qrcode"), {
     text: finalURL,
     width: 200,
     height: 200
   });
+
+  document.getElementById("output").innerText = "Scan QR to view receipt";
 }
 </script>
 
